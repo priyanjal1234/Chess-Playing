@@ -5,6 +5,9 @@ import app from "./app.js";
 import http from "http";
 import { Server } from "socket.io";
 import { generate } from "random-words";
+import { Chess } from "chess.js";
+
+let chess = new Chess();
 
 const server = http.createServer(app);
 
@@ -16,6 +19,7 @@ const io = new Server(server, {
 });
 
 let waitingPlayers = [];
+
 io.on("connection", function (socket) {
   console.log(`Connected ${socket.id}`);
 
@@ -44,6 +48,27 @@ io.on("connection", function (socket) {
         color: "black",
         opponentId: whitePlayer.id,
       });
+    }
+  });
+
+  socket.on("get-game-position", function (roomId) {
+    io.to(roomId).emit("initial-position", { fen: chess.fen() });
+  });
+
+  socket.on("make-move", function ({ move, who, roomId }) {
+    try {
+      if (chess.turn() !== who) {
+        socket.emit("not-your-turn", "This is not your turn");
+        return;
+      }
+      let moveData = chess.move(move);
+      if (moveData) {
+        io.to(roomId).emit("new-fen", { fen: chess.fen() });
+      } else {
+        socket.emit("invalid-move", "Move is invalid");
+      }
+    } catch (error) {
+      socket.emit("some-error", error);
     }
   });
 
