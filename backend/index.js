@@ -82,14 +82,28 @@ io.on("connection", function (socket) {
     }
   });
 
-  socket.on("reset-game",function(roomId) {
-    const game = games[roomId]
-    if(!game) {
-      return
+  socket.on("reset-game", function (roomId) {
+    const game = games[roomId];
+    if (!game) {
+      return;
     }
-    game.chess.reset()
-    io.to(roomId).emit("new-fen",{fen: game.chess.fen()})
-  })
+    game.chess.reset();
+    io.to(roomId).emit("new-fen", { fen: game.chess.fen() });
+  });
+
+  socket.on("resign", function ({ roomId, color }) {
+    
+    const game = games[roomId];
+    if (!game) return;
+
+    const winner = color === "white" ? "black" : "white";
+
+    io.to(roomId).emit("game-over", {
+      reason: "resignation",
+      winner,
+      message: `${color} has resigned. ${winner} wins!`,
+    });
+  });
 
   socket.on("disconnect", function () {
     console.log(`Disconnected ${socket.id}`);
