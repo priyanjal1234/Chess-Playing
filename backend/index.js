@@ -92,16 +92,12 @@ io.on("connection", function (socket) {
   });
 
   socket.on("resign", function ({ roomId, color }) {
-    
     const game = games[roomId];
     if (!game) return;
 
-    const winner = color === "white" ? "black" : "white";
-
     io.to(roomId).emit("game-over", {
-      reason: "resignation",
-      winner,
-      message: `${color} has resigned. ${winner} wins!`,
+      message: `${color === "white" ? "White" : "Black"} resigned`,
+      resignedBy: color,
     });
   });
 
