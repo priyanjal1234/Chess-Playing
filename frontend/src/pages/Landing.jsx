@@ -19,8 +19,9 @@ const Landing = () => {
     });
 
     socket.on("startGame", function (data) {
+      console.log(data)
       setshowLoader(false);
-      navigate(`/room/${data.roomId}`)
+      navigate(`/room/${data.roomId}/${data.color}`)
     });
   }, []);
 

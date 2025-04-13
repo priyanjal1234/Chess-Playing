@@ -22,18 +22,27 @@ io.on("connection", function (socket) {
   socket.on("random-play", function () {
     if (waitingPlayers.length === 0) {
       waitingPlayers.push(socket);
-      
-      socket.emit("single","Waiting for other player")
+
+      socket.emit("single", "Waiting for other player");
     } else {
       let opponent = waitingPlayers.pop();
       let roomId = generate();
       socket.join(roomId);
       opponent.join(roomId);
 
-      io.to(roomId).emit("startGame", {
-        white: socket.id,
-        black: opponent.id,
+      const whitePlayer = Math.random() < 0.5 ? socket : opponent;
+      const blackPlayer = whitePlayer === socket ? opponent : socket;
+
+      io.to(whitePlayer.id).emit("startGame", {
         roomId,
+        color: "white",
+        opponentId: blackPlayer.id,
+      });
+
+      io.to(blackPlayer.id).emit("startGame", {
+        roomId,
+        color: "black",
+        opponentId: whitePlayer.id,
       });
     }
   });
