@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Users, UserPlus, Bot, ChevronRight } from "lucide-react";
 import socket, { connectSocket } from "../socket/socket.js";
+import {useNavigate} from 'react-router-dom'
 
 const Landing = () => {
   const [showLoader, setshowLoader] = useState(false);
   const [showLoadingText, setshowLoadingText] = useState("");
+  const navigate = useNavigate()
   
   useEffect(() => {
     connectSocket();
@@ -12,13 +14,13 @@ const Landing = () => {
     socket.on("single", function (singleData) {
       if (singleData === "Waiting for other player") {
         setshowLoader(true);
-        setshowLoadingText(singleData);
+        setshowLoadingText("Finding the Opponent");
       }
     });
 
     socket.on("startGame", function (data) {
       setshowLoader(false);
-      console.log(data);
+      navigate(`/room/${data.roomId}`)
     });
   }, []);
 
