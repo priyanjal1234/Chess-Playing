@@ -46,6 +46,7 @@ const Landing = () => {
       {/* Game Mode Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
         <button
+          disabled={showLoader}
           className="flex flex-col items-center p-8 bg-gray-800 rounded-xl hover:bg-gray-700 transition-all transform hover:scale-105 border-2 border-emerald-500/20 hover:border-emerald-500"
           onClick={handleRandomMatchmaking}
         >
