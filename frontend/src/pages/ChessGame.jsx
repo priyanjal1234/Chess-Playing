@@ -38,6 +38,10 @@ const ChessGame = () => {
     });
   }
 
+  function handleResetGame() {
+    socket.emit("reset-game",roomId)
+  }
+
   return (
     <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center">
       <div
@@ -58,6 +62,9 @@ const ChessGame = () => {
         <div className="mt-8 flex justify-center gap-4">
           <button className="px-6 py-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/30">
             Resign
+          </button>
+          <button onClick={handleResetGame} className="px-6 py-2 bg-blue-500/20 text-blue-500 rounded-lg hover:bg-blue-500/30">
+            Reset
           </button>
         </div>
       </div>

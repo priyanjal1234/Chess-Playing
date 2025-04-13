@@ -7,8 +7,6 @@ import { Server } from "socket.io";
 import { generate } from "random-words";
 import { Chess } from "chess.js";
 
-let chess = new Chess();
-
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -19,6 +17,7 @@ const io = new Server(server, {
 });
 
 let waitingPlayers = [];
+let games = {};
 
 io.on("connection", function (socket) {
   console.log(`Connected ${socket.id}`);
@@ -37,6 +36,12 @@ io.on("connection", function (socket) {
       const whitePlayer = Math.random() < 0.5 ? socket : opponent;
       const blackPlayer = whitePlayer === socket ? opponent : socket;
 
+      games[roomId] = {
+        chess: new Chess(),
+        white: whitePlayer.id,
+        black: blackPlayer.id,
+      };
+
       io.to(whitePlayer.id).emit("startGame", {
         roomId,
         color: "white",
@@ -52,11 +57,16 @@ io.on("connection", function (socket) {
   });
 
   socket.on("get-game-position", function (roomId) {
-    io.to(roomId).emit("initial-position", { fen: chess.fen() });
+    if (!games[roomId]) return;
+    io.to(roomId).emit("initial-position", { fen: games[roomId].chess.fen() });
   });
 
   socket.on("make-move", function ({ move, who, roomId }) {
     try {
+      const game = games[roomId];
+      if (!game) return;
+
+      const chess = game.chess;
       if (chess.turn() !== who) {
         socket.emit("not-your-turn", "This is not your turn");
         return;
@@ -71,6 +81,15 @@ io.on("connection", function (socket) {
       socket.emit("some-error", error);
     }
   });
+
+  socket.on("reset-game",function(roomId) {
+    const game = games[roomId]
+    if(!game) {
+      return
+    }
+    game.chess.reset()
+    io.to(roomId).emit("new-fen",{fen: game.chess.fen()})
+  })
 
   socket.on("disconnect", function () {
     console.log(`Disconnected ${socket.id}`);
